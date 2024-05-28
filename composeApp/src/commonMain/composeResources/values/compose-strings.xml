@@ -1,0 +1,7 @@
+<resources>
+
+    <string name="input_city">Введи регион/город</string>
+    <string name="has_error">Произошла ошибка</string>
+    <string name="retry">Попробовать снова</string>
+
+</resources>
