@@ -69,9 +69,7 @@ class DefaultRootComponent(
             componentContext = componentContext,
             weatherRepository = weatherRepository,
             city = config.city,
-            back = {
-                navigation.pop()
-            }
+            back = navigation::pop
         )
 
     @Serializable
