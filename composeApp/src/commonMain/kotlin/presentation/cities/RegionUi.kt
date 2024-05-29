@@ -1,4 +1,4 @@
-package presentation
+package presentation.cities
 
 import androidx.compose.runtime.Immutable
 

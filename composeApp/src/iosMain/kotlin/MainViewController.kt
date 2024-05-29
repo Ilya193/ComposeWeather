@@ -3,7 +3,8 @@ import androidx.compose.ui.window.ComposeUIViewController
 import com.arkivanov.decompose.DefaultComponentContext
 import com.arkivanov.essenty.lifecycle.LifecycleRegistry
 import di.commonAppModule
-import domain.CitiesRepository
+import domain.cities.CitiesRepository
+import domain.weather.WeatherRepository
 import org.koin.compose.KoinApplication
 import org.koin.compose.KoinContext
 import org.koin.compose.koinInject
@@ -15,9 +16,10 @@ fun MainViewController() = ComposeUIViewController {
         modules(commonAppModule)
     }) {
         KoinContext {
-            val repository = koinInject<CitiesRepository>()
+            val citiesRepository = koinInject<CitiesRepository>()
+            val weatherRepository = koinInject<WeatherRepository>()
             val root = remember {
-                DefaultRootComponent(DefaultComponentContext(LifecycleRegistry()), repository)
+                DefaultRootComponent(DefaultComponentContext(LifecycleRegistry()), citiesRepository, weatherRepository)
             }
             App(root)
         }

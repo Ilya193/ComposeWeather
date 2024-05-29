@@ -1,9 +1,10 @@
-package data
+package data.cities
 
-import data.model.CitiesDTOItem
-import domain.CitiesRepository
+import data.cities.model.CitiesDTOItem
+import data.toRegionDomain
+import domain.cities.CitiesRepository
 import domain.LoadResult
-import domain.RegionDomain
+import domain.cities.RegionDomain
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get

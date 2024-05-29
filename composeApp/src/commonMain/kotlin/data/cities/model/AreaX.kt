@@ -1,4 +1,4 @@
-package data.model
+package data.cities.model
 
 import kotlinx.serialization.Serializable
 

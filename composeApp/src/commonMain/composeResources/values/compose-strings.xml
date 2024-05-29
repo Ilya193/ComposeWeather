@@ -4,4 +4,10 @@
     <string name="has_error">Произошла ошибка</string>
     <string name="retry">Попробовать снова</string>
 
+    <string name="country">Страна:</string>
+    <string name="locality">Населенный пункт:</string>
+    <string name="localtime">Время:</string>
+    <string name="temp">Температура:</string>
+    <string name="unit">°C</string>
+
 </resources>

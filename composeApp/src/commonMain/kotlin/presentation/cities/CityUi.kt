@@ -1,4 +1,4 @@
-package presentation
+package presentation.cities
 
 data class CityUi(
     val id: String,

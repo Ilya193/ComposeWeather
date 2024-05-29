@@ -1,4 +1,4 @@
-package presentation
+package presentation.cities
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
@@ -25,20 +25,25 @@ import com.arkivanov.decompose.value.MutableValue
 import com.arkivanov.decompose.value.Value
 import com.arkivanov.decompose.value.update
 import com.arkivanov.essenty.lifecycle.coroutines.coroutineScope
-import domain.CitiesRepository
 import domain.LoadResult
+import domain.cities.CitiesRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
+import presentation.ErrorContent
+import presentation.LoadingContent
+import presentation.toRegionUi
 import share.composeapp.generated.resources.Res
 import share.composeapp.generated.resources.input_city
 
-interface WeatherComponent {
+interface RegionsComponent {
     val model: Value<Model>
 
     fun action(event: Event)
+
+    fun onCityClicked(city: String)
 
     data class Model(
         val regions: List<RegionUi> = emptyList(),
@@ -56,17 +61,18 @@ sealed interface Event {
     class ShowCities(val indexRegion: Int) : Event
 }
 
-class DefaultWeatherComponent(
+class DefaultRegionsComponent(
     componentContext: ComponentContext,
     private val repository: CitiesRepository,
+    private val onClick: (String) -> Unit,
     private val dispatcher: CoroutineDispatcher = Dispatchers.IO
-) : WeatherComponent, ComponentContext by componentContext {
+) : RegionsComponent, ComponentContext by componentContext {
 
     private val scope = coroutineScope()
 
     private var initRegions = mutableListOf<RegionUi>()
-    private val _model = MutableValue(WeatherComponent.Model(isLoading = true))
-    override val model: Value<WeatherComponent.Model> = _model
+    private val _model = MutableValue(RegionsComponent.Model(isLoading = true))
+    override val model: Value<RegionsComponent.Model> = _model
 
     init {
         fetchCities()
@@ -82,17 +88,21 @@ class DefaultWeatherComponent(
         }
     }
 
+    override fun onCityClicked(city: String) {
+        onClick(city)
+    }
+
     private fun fetchCities() {
         scope.launch(dispatcher) {
             when (val regions = repository.fetchCities()) {
                 is LoadResult.Success -> {
                     val temp = regions.data.map { it.toRegionUi() }
                     initRegions = temp.toMutableList()
-                    _model.value = WeatherComponent.Model(regions = temp)
+                    _model.value = RegionsComponent.Model(regions = temp)
                 }
 
                 is LoadResult.Error -> {
-                    _model.value = WeatherComponent.Model(hasError = true)
+                    _model.value = RegionsComponent.Model(hasError = true)
                 }
             }
         }
@@ -121,30 +131,32 @@ class DefaultWeatherComponent(
 }
 
 @Composable
-fun WeatherContent(component: WeatherComponent) {
+fun RegionsContent(component: RegionsComponent) {
     val model by component.model.subscribeAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (model.isLoading) LoadingContent()
         else if (model.hasError) ErrorContent(remember { { component.action(Event.Retry()) } })
         else {
-            RegionsContent(
+            SuccessRegionsContent(
                 model,
                 remember { { component.action(Event.InputCity(it)) } },
-                remember { { component.action(Event.ShowCities(it)) } })
+                remember { { component.action(Event.ShowCities(it)) } },
+                remember { { component.onCityClicked(it) } })
         }
     }
 }
 
 @Composable
-fun RegionsContent(
-    model: WeatherComponent.Model,
+fun SuccessRegionsContent(
+    model: RegionsComponent.Model,
     onInput: (String) -> Unit,
-    onClick: (Int) -> Unit
+    onRegionClick: (Int) -> Unit,
+    onCityClick: (String) -> Unit
 ) {
     Column(modifier = Modifier.fillMaxSize()) {
-        if (model.searchMode) CitiesContent(model, Modifier.fillMaxWidth().weight(1f))
-        else RegionsAndCitiesContent(model, onClick, Modifier.fillMaxWidth().weight(1f))
+        if (model.searchMode) CitiesContent(model, onCityClick, Modifier.fillMaxWidth().weight(1f))
+        else RegionsAndCitiesContent(model, onRegionClick, onCityClick, Modifier.fillMaxWidth().weight(1f))
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth().weight(0.1f),
             value = model.inputCity,
@@ -157,8 +169,9 @@ fun RegionsContent(
 
 @Composable
 fun RegionsAndCitiesContent(
-    model: WeatherComponent.Model,
-    onClick: (Int) -> Unit,
+    model: RegionsComponent.Model,
+    onRegionClick: (Int) -> Unit,
+    onCityClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
@@ -170,7 +183,7 @@ fun RegionsAndCitiesContent(
                     interactionSource = remember { MutableInteractionSource() },
                     indication = null,
                     onClick = {
-                        onClick(index)
+                        onRegionClick(index)
                     }
                 ).padding(start = 4.dp), text = item.name
             )
@@ -179,7 +192,7 @@ fun RegionsAndCitiesContent(
                     modifier = Modifier.fillMaxWidth().height(150.dp)
                 ) {
                     items(item.areas, key = { it.id }) {
-                        Text(modifier = Modifier.padding(start = 12.dp), text = it.name)
+                        Text(modifier = Modifier.padding(start = 12.dp).clickable { onCityClick(it.name) }, text = it.name)
                     }
                 }
             }
@@ -189,14 +202,18 @@ fun RegionsAndCitiesContent(
 
 @Composable
 fun CitiesContent(
-    model: WeatherComponent.Model,
+    model: RegionsComponent.Model,
+    onCityClick: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LazyColumn(
         modifier = modifier
     ) {
         items(model.cities, key = { it.id }) {
-            Text(modifier = Modifier.padding(start = 12.dp), text = it.name)
+            Text(
+                modifier = Modifier.padding(start = 12.dp).clickable { onCityClick(it.name) },
+                text = it.name
+            )
         }
     }
 }

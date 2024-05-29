@@ -1,7 +1,9 @@
 package di
 
-import data.CitiesRepositoryImpl
-import domain.CitiesRepository
+import data.cities.CitiesRepositoryImpl
+import data.weather.WeatherRepositoryImpl
+import domain.cities.CitiesRepository
+import domain.weather.WeatherRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.serialization.kotlinx.json.json
@@ -22,5 +24,9 @@ val commonAppModule = module {
 
     factory<CitiesRepository> {
         CitiesRepositoryImpl(get())
+    }
+
+    factory<WeatherRepository> {
+        WeatherRepositoryImpl(get())
     }
 }

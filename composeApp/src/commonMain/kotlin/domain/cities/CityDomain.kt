@@ -1,4 +1,4 @@
-package domain
+package domain.cities
 
 data class CityDomain(
     val id: String,
