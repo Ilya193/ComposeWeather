@@ -15,6 +15,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -45,6 +46,7 @@ interface RegionsComponent {
 
     fun onCityClicked(city: String)
 
+    @Immutable
     data class Model(
         val regions: List<RegionUi> = emptyList(),
         val cities: List<CityUi> = emptyList(),
@@ -93,6 +95,7 @@ class DefaultRegionsComponent(
     }
 
     private fun fetchCities() {
+        _model.value = RegionsComponent.Model(isLoading = true)
         scope.launch(dispatcher) {
             when (val regions = repository.fetchCities()) {
                 is LoadResult.Success -> {

@@ -61,6 +61,13 @@ kotlin {
             implementation(libs.ktor.client.core)
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.serialization.kotlinx.json)
+
+            tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>() {
+                compilerOptions.freeCompilerArgs.addAll(
+                    "-P",
+                    "plugin:androidx.compose.compiler.plugins.kotlin:reportsDestination=" + project.buildDir.absolutePath + "/compose_metrics",
+                )
+            }
         }
 
         iosMain.dependencies {
